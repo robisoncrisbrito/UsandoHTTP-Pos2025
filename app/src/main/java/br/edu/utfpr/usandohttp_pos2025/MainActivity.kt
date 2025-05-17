@@ -11,11 +11,15 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.URL
 
 class MainActivity : AppCompatActivity(), LocationListener {
 
     private lateinit var tvLatitude: TextView
     private lateinit var tvLongitude: TextView
+    private lateinit var tvResposta: TextView
 
     private lateinit var locationManager: LocationManager
 
@@ -25,6 +29,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         tvLatitude = findViewById(R.id.tvLatitude)
         tvLongitude = findViewById(R.id.tvLongitude)
+        tvResposta = findViewById(R.id.tvResposta)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -50,7 +55,39 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     }
 
-    fun btVerMapaOnClick(view: View) {
+    fun btVerEnderecoOnClick(view: View) {
+
+        Thread {
+            val endereco =
+                "https://maps.googleapis.com/maps/api/geocode/xml?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
+
+            val url = URL(endereco)
+            val conn = url.openConnection()
+            //val dados = conn.getInputStream().bufferedReader().readText()
+
+            val inputStream = conn.getInputStream()
+            val entrada = BufferedReader(InputStreamReader( inputStream ) )
+
+            val resposta = StringBuilder()
+
+            var linha = entrada.readLine()
+
+            while ( linha != null ) {
+                resposta.append(linha)
+                linha = entrada.readLine()
+            }
+
+            runOnUiThread {
+
+                val formattedAddress = resposta.substring(
+                    resposta.indexOf("<formatted_address>") + 19,
+                    resposta.indexOf("</formatted_address>")
+                )
+
+                tvResposta.text = formattedAddress.toString()
+            }
+
+        }.start()
 
     }
 

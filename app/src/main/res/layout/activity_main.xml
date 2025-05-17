@@ -35,8 +35,14 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ver no Mapa"
-        android:onClick="btVerMapaOnClick" />
+        android:text="Ver Endereço"
+        android:onClick="btVerEnderecoOnClick" />
 
+    <TextView
+        android:id="@+id/tvResposta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:text="" />
 
 </LinearLayout>
