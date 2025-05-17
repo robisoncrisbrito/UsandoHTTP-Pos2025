@@ -11,6 +11,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.json.JSONObject
@@ -60,43 +63,34 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     fun btVerEnderecoOnClick(view: View) {
 
-        Thread {
-            val endereco =
-                "https://maps.googleapis.com/maps/api/geocode/json?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
+        val endereco =
+            "https://maps.googleapis.com/maps/api/geocode/json?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
 
-            val url = URL(endereco)
-            val conn = url.openConnection()
-            //val dados = conn.getInputStream().bufferedReader().readText()
+        val requestQueue = Volley.newRequestQueue(this)
 
-            val inputStream = conn.getInputStream()
-            val entrada = BufferedReader(InputStreamReader( inputStream ) )
+        val request = StringRequest(
+            Request.Method.GET,
+            endereco,
+            { resposta : String ->
+                val jsonObject = parseJson(resposta)
 
-            val resposta = StringBuilder()
+                var rua = ""
 
-            var linha = entrada.readLine()
-
-            while ( linha != null ) {
-                resposta.append(linha)
-                linha = entrada.readLine()
-            }
-
-            val jsonObject = parseJson(resposta.toString())
-
-            var rua = ""
-
-            if ( jsonObject != null ) {
-                val results = jsonObject.getAsJsonArray( "results" )
-                if ( results != null  && results.size() > 0 ) {
-                    val result = results.get(0).asJsonObject
-                    rua = result.get("formatted_address").asString
+                if ( jsonObject != null ) {
+                    val results = jsonObject.getAsJsonArray( "results" )
+                    if ( results != null  && results.size() > 0 ) {
+                        val result = results.get(0).asJsonObject
+                        rua = result.get("formatted_address").asString
+                    }
                 }
-            }
-
-            runOnUiThread {
                 tvResposta.text = rua.toString()
+            },
+            { erro ->
+                tvResposta.text = erro.toString()
             }
+        )
 
-        }.start()
+        requestQueue.add( request )
 
     } // fim do btVerEnderecoOnClick
 
