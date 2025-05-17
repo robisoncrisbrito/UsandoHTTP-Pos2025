@@ -11,6 +11,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URL
@@ -59,7 +62,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         Thread {
             val endereco =
-                "https://maps.googleapis.com/maps/api/geocode/xml?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
+                "https://maps.googleapis.com/maps/api/geocode/json?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
 
             val url = URL(endereco)
             val conn = url.openConnection()
@@ -77,19 +80,36 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 linha = entrada.readLine()
             }
 
+            val jsonObject = parseJson(resposta.toString())
+
+            var rua = ""
+
+            if ( jsonObject != null ) {
+                val results = jsonObject.getAsJsonArray( "results" )
+                if ( results != null  && results.size() > 0 ) {
+                    val result = results.get(0).asJsonObject
+                    rua = result.get("formatted_address").asString
+                }
+            }
+
             runOnUiThread {
-
-                val formattedAddress = resposta.substring(
-                    resposta.indexOf("<formatted_address>") + 19,
-                    resposta.indexOf("</formatted_address>")
-                )
-
-                tvResposta.text = formattedAddress.toString()
+                tvResposta.text = rua.toString()
             }
 
         }.start()
 
+    } // fim do btVerEnderecoOnClick
+
+    private fun parseJson(json: String): JsonObject? {
+        val jsonElement = JsonParser.parseString( json )
+
+        if ( jsonElement.isJsonObject() ) {
+            return jsonElement.asJsonObject
+        } else {
+            return null
+        }
     }
+
 
     override fun onLocationChanged(location: Location) {
         tvLatitude.text = location.latitude.toString()
