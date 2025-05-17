@@ -57,6 +57,12 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     fun btVerEnderecoOnClick(view: View) {
 
+        val applicationContext = applicationContext
+        val apiKey = applicationContext.packageManager.getApplicationInfo(
+            applicationContext.packageName,
+            PackageManager.GET_META_DATA
+        ).metaData.getString("com.google.android.geo.API_KEY")
+
         Thread {
             val endereco =
                 "https://maps.googleapis.com/maps/api/geocode/xml?latlng=${tvLatitude.text},${tvLongitude.text}&key=AIzaSyCMzWccWPPD5Q8mKmyk0AVx3e-_SgTakpA"
